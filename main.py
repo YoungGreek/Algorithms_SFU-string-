@@ -32,7 +32,7 @@ def start_app() -> int:
     parser = argparse.ArgumentParser(description="Поиск подстрок в строке или файле (алгоритм Бойера–Мура–Хорспула)")
     parser.add_argument('--str_or_file', required=True, type=str, help='Введите целевую строку или укажите путь к файлу.')
     parser.add_argument('--sub_str', required=True, action='append', help='Введите подстроку или подстроки для поиска.')
-    parser.add_argument('--case_sensitivity', required=True, help='Укажите чувствительность к регистру (0 - неважно 1 - важно).')
+    parser.add_argument('--case_sensitivity', required=True, help='Укажите чувствительность к регистру (0 - не важно 1 - важно).')
     parser.add_argument('--method', required=True, help='Укажите метод поиска (first - с начала, last - с конца).')
     parser.add_argument('--count', required=True, help='Укажите максимально количество вхождений, которые требуется найти.')
 
