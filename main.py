@@ -3,34 +3,20 @@ from typing import Union, Tuple
 from search import search
 from pathlib import Path
 
+import argparse
 
-def print_instruction():
-    """
-    Выводит инструкцию по работе с программой
-    """
 
-    print("=" * 100)
-    print("Программа поиска вхождений подстроки (подстрок) в строке (алгоритм Бойера–Мура–Хорспула)")
-    print("=" * 100)
-    print()
-    print("Что нужно сделать:")
-    print("1. Введите сам текст ИЛИ полный путь к файлу")
-    print("   Если файл существует, программа прочитает его содержимое.")
-    print("2. Укажите слово/фразу. Можно искать")
-    print("   сразу несколько шаблонов: в этом случае вводите их по очереди, нажимая Enter после ввода шаблона.")
-    print("3. Выберите настройки:")
-    print("   • Учитывать регистр: если важно отличать «Тест» от «тест», введите True.")
-    print("     Если не важно — введите False.")
-    print("   • Направление поиска: 'first' — искать первые вхождения (с начала),")
-    print("     'last' — последние вхождения (с конца).")
-    print("   • Количество вхождений: сколько позиций нужно найти (целое число).")
-    print("   • Количество подстрок для поиска: какое количество подстрок будет введено для поиска (целое число).")
-    print()
-    print("После ввода программа покажет позиции (номера символов), где найдены")
-    print("совпадения. Если ничего не найдено — будет выведено None.")
-    print("Для остановки программы напишите Exit.")
-    print("-" * 100)
-    print()
+def parse_args():
+
+    parser = argparse.ArgumentParser(description="Поиск подстрок в строке или файле (алгоритм Бойера–Мура–Хорспула)")
+    parser.add_argument('--str_or_file', type=str, help='Введите целевую строку или укажите путь к файлу.')
+    parser.add_argument('--sub_str', required=True, action='append', help='Введите подстроку или подстроки для поиска.')
+    parser.add_argument('--case_sensitivity', help='Укажите чувствительность к регистру (0 - неважно 1 - важно).')
+    parser.add_argument('--method', help='Укажите метод поиска (first - с начала, last - с конца).')
+    parser.add_argument('--count', help='Укажите максимально количество вхождений, которые требуется найти.')
+
+    args = parser.parse_args()
+    print(args.str_or_file)
 
 
 def start_app() -> int:
@@ -43,55 +29,31 @@ def start_app() -> int:
         Ответ программы на взаимодействие с ней
     """
 
-    file_or_string = input('\nВведите строку по которой будет выполняться поиск, '
-                           'либо введите путь до файла, в котором находится строка. \n'
-                           'Формат ввода пути к файлу: C:\\...\\name_of_file.txt: ')
+    parser = argparse.ArgumentParser(description="Поиск подстрок в строке или файле (алгоритм Бойера–Мура–Хорспула)")
+    parser.add_argument('--str_or_file', required=True, type=str, help='Введите целевую строку или укажите путь к файлу.')
+    parser.add_argument('--sub_str', required=True, action='append', help='Введите подстроку или подстроки для поиска.')
+    parser.add_argument('--case_sensitivity', required=True, help='Укажите чувствительность к регистру (0 - неважно 1 - важно).')
+    parser.add_argument('--method', required=True, help='Укажите метод поиска (first - с начала, last - с конца).')
+    parser.add_argument('--count', required=True, help='Укажите максимально количество вхождений, которые требуется найти.')
 
-    if file_or_string == 'Exit':
-        return 2
+    args = parser.parse_args()
 
-    path_obj = Path(file_or_string)
+    path_obj = Path(args.str_or_file)
 
     search_in_file = False
 
     if path_obj.is_file():
         search_in_file = True
-        file_path = file_or_string
+        file_path = args.str_or_file
     else:
-        general_string = file_or_string
+        general_string = args.str_or_file
 
-    count_of_sub_string = input('\nВведите количество подстрок, которые будут искаться (нужно ввести любое целое число от 1): ')
-    if count_of_sub_string == 'Exit':
-        return 2
-
-    try:
-        count_of_sub_string = int(count_of_sub_string)
-
-        if count_of_sub_string < 1:
-            print('\n!!! Количество подстрок обязательно должно быть больше либо равным единице. Повторите попытку сначала.')
-            return -1
-
-    except ValueError:
-        print('\n!!! Количество подстрок может вводиться только числовым значением. Повторите попытку сначала')
-        return -1
-
-    if count_of_sub_string == 1:
-        sub_string = input('\nВведите подстроку для поиска: ')
-        if sub_string == 'Exit':
-            return 2
+    if args.sub_str.count == 1:
+        sub_string = args.sub_str[0]
     else:
+        sub_string = tuple(args.sub_str)
 
-        sub_string = []
-        for i in range(count_of_sub_string):
-            sub_string.append(input('Введите подстроку №' + str(i + 1) + " для поиска: "))
-            if sub_string[i] == 'Exit':
-                return 2
-
-        sub_string = tuple(sub_string)
-
-    max_input = input('\nВведите количество вхождений для поиска: ')
-    if max_input == 'Exit':
-        return 2
+    max_input = args.count
 
     try:
         max_input = int(max_input)
@@ -104,17 +66,13 @@ def start_app() -> int:
         print('\n!!! Количество вхождений может вводиться только числовым значением. Повторите попытку сначала')
         return -1
 
-    method = input('\nУкажите метод поиска с конца (last) или с начала (first): ')
-    if method == 'Exit':
-        return 2
+    method = args.method
 
     if method != 'last' and method != 'first':
         print('\n!!! Есть только два метода поиска: first (с начала) и last (с конца). Повторите попытку сначала.')
         return -1
 
-    case_sensitivity = input('\nУкажите чувствительность к регистру 0 или 1: 0 - отключить чувствительность, 1 - включить чувствительность: ')
-    if case_sensitivity == 'Exit':
-        return 2
+    case_sensitivity = args.case_sensitivity
 
     if case_sensitivity == '0':
         case_sensitivity = False
@@ -161,7 +119,7 @@ def start_search(general_string: str, sub_string: Union[str, Tuple[str, ...]], c
 
     if isinstance(indexes, tuple):
 
-        print('Количество вхождений: ', len(indexes))
+        print('Общее количество вхождений: ', len(indexes))
         print(return_count_of_sub_str(sub_string, indexes))
 
     else:
@@ -169,10 +127,11 @@ def start_search(general_string: str, sub_string: Union[str, Tuple[str, ...]], c
         answer_to_user = ''
         all_count = 0
         for key in indexes:
-            all_count += len(indexes[key])
+            if indexes[key] is not None:
+                all_count += len(indexes[key])
             answer_to_user += return_count_of_sub_str(key, indexes[key]) + '\n'
 
-        print('Количество вхождений: ', all_count)
+        print('Общее количество вхождений: ', all_count)
         print(answer_to_user)
 
 
@@ -196,13 +155,14 @@ def return_count_of_sub_str(sub_str: Union[str, Tuple[str, ...]], tuple_of_index
     answer_to_user = f'Подстрока {sub_str} встречается на позициях: '
 
     counter = 0
-    for index in tuple_of_indexes:
-        counter += 1
+    if tuple_of_indexes is not None:
+        for index in tuple_of_indexes:
+            counter += 1
 
-        answer_to_user += str(index + 1)
+            answer_to_user += str(index + 1)
 
-        if counter != len(tuple_of_indexes):
-            answer_to_user += ', '
+            if counter != len(tuple_of_indexes):
+                answer_to_user += ', '
 
     return answer_to_user
 
@@ -233,7 +193,7 @@ def return_count_of_sub_str_to_search_in_file(tuple_of_indexes: tuple, block_sta
 
 def stream_file_blocks(file_path: str,
                        sub_str: str,
-                       block_size: int = 5):
+                       block_size: int = 4096):
     """
     Читает файл блоками, обеспечивая перекрытие на стыке блоков.
     Возвращает (текст_блока, абсолютная_позиция_начала_в_файле).
@@ -335,12 +295,7 @@ def searcher_in_file(file_path: str, sub_string: Union[str, Tuple[str, ...]], ca
 
 if __name__ == '__main__':
 
-    print_instruction()
-
     answer = start_app()
-
-    while answer != 2:
-        answer = start_app()
 
 
 
